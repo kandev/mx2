@@ -3,7 +3,7 @@ version: "3.7"
 services:
   mail1:
     build: .
-    image: kandev/postfix
+    image: kandev/mx2
     container_name: mx2
     restart: always
     hostname: mx2
