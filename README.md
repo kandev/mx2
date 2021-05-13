@@ -17,8 +17,18 @@ docker start mx2
 
 ## Configuration ##
 
+### Host server ###
+Usualy I disable all the fancy things which Docker does with iptables by adding this to **/etc/docker/daemon.json**:
+```
+{
+  "userland-proxy": false,
+  "iptables": false
+}
+```
+I prefer to do all the firewalling manually.
+
 ### Obtain SSL Certificate ###
-Initial creation of the certificate is manual.
+It's not compulsory, but it's good practice to have trusted certificate. Initial creation of the certificate is manual.
 ```
 certbot certonly --agree-tos -n --standalone -d mail.domain.tld
 ```
