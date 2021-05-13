@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  mail1:
+    build: .
+    image: kandev/postfix
+    container_name: mx2
+    restart: always
+    hostname: mx2
+    volumes:
+      - /etc/localtime:/etc/localtime:ro

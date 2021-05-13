@@ -1,0 +1,93 @@
+# Local server public FQDN address
+myhostname = mx2.domain.tld
+
+# "outside" proxy/NAT addresses when your system is a backup MX host for other domains, otherwise mail delivery loops will happen when the primary MX host is down. 
+proxy_interfaces = 1.1.1.1
+
+# All domains we would like to back up delivery to
+relay_domains = domain.tld, example.com, company.org
+
+
+smtpd_banner = $myhostname ESMTP
+biff = no
+append_dot_mydomain = no
+readme_directory = no
+compatibility_level = 2
+
+# TLS parameters. Switch to letsencrypt if possible.
+#smtpd_tls_cert_file=/etc/letsencrypt/live/mx2.domain.tld/fullchain.pem
+#smtpd_tls_key_file=/etc/letsencrypt/live/mx2.domain.tld/privkey.pem
+smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_tls_security_level=may
+smtpd_tls_protocols = !SSLv2, !SSLv3 !TLSv1
+smtpd_tls_loglevel = 1
+
+smtp_tls_CApath=/etc/ssl/certs
+smtp_tls_security_level=may
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+
+# And remember - NEVER add your email domain here!
+mydestination = $myhostname, localhost.localdomain, localhost
+
+relayhost =
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = all
+
+# Should be empty to avoid matching all subdomains except if we specify .domain.tld somewhere
+parent_domain_matches_subdomains =
+
+# To have any helo filtering we need this
+smtpd_helo_required = yes
+
+# If it can't be delivered within this period of time - it can't be delivered
+bounce_queue_lifetime = 1d
+maximal_queue_lifetime = 1d
+
+# Delivery retry policy
+maximal_backoff_time = 15h
+minimal_backoff_time = 5m
+
+smtpd_sender_restrictions =
+    reject_non_fqdn_sender,
+    reject_unknown_sender_domain,
+    reject_authenticated_sender_login_mismatch
+
+smtpd_helo_restrictions =
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    reject_invalid_helo_hostname,
+    reject_non_fqdn_helo_hostname,
+    reject_unknown_helo_hostname,
+    reject_rhsbl_helo dbl.spamhaus.org
+
+smtpd_relay_restrictions =
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    check_policy_service unix:private/policyd-spf,
+    reject_unauth_destination
+
+smtpd_recipient_restrictions =
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    reject_unknown_sender_domain,
+    reject_unknown_recipient_domain,
+    reject_unauth_destination,
+    check_policy_service unix:private/policyd-spf,
+    reject_rhsbl_reverse_client dbl.spamhaus.org,
+    reject_rhsbl_sender dbl.spamhaus.org,
+    reject_rbl_client zen.spamhaus.org,
+    reject_rbl_client bl.spamcop.net,
+    reject_rbl_client b.barracudacentral.org,
+    reject_rbl_client cbl.abuseat.org,
+    permit
+
+smtpd_data_restrictions =
+    reject_unauth_pipelining,
+    permit
